@@ -61,6 +61,23 @@
         <scope>system</scope>
         <systemPath>${project.basedir}/src/main/webapp/lib/tess4j.jar</systemPath>
     </dependency>
+    
+    <dependency>
+        <groupId>com.sparkjava</groupId>
+        <artifactId>tesslib1</artifactId>
+        <version>0.5.1</version>
+        <scope>system</scope>
+        <systemPath>${project.basedir}/src/main/webapp/lib/libtesseract302.dll</systemPath>
+    </dependency>
+    
+    <dependency>
+        <groupId>com.sparkjava</groupId>
+        <artifactId>tesslib2</artifactId>
+        <version>0.5.1</version>
+        <scope>system</scope>
+        <systemPath>${project.basedir}/src/main/webapp/lib/liblept168.dll</systemPath>
+    </dependency>
+    
   </dependencies>
   
   <build>

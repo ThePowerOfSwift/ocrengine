@@ -80,7 +80,9 @@ public class ImageProcessor {
 			System.out.println(result);
 			return result;
 		} catch (TesseractException e) {
-			System.err.println(e.getMessage());
+			e.printStackTrace();
+		} catch (Exception e){
+			e.printStackTrace();
 		}
 		return "No Output";
 
