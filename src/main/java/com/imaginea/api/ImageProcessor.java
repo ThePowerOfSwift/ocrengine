@@ -3,6 +3,8 @@ package com.imaginea.api;
 import static spark.Spark.get;
 import static spark.Spark.post;
 
+import java.awt.Color;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -10,8 +12,12 @@ import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.imageio.ImageIO;
 import javax.servlet.MultipartConfigElement;
 import javax.servlet.http.Part;
+
+import com.google.gson.Gson;
+import com.imaginea.process.OtsuBinarize;
 
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
@@ -72,20 +78,100 @@ public class ImageProcessor {
 	
 	public static String process(File imageFile){
 		//File imageFile = new File(filePath);
+		try{
+		
+			BufferedImage inputImage = ImageIO.read(imageFile);
+			BufferedImage grayScale = OtsuBinarize.toGray(inputImage);
+			BufferedImage binaryImage = OtsuBinarize.binarize(grayScale);
+			
+			File binaryFile = new File("tempBinaryFile.jpg");
+			ImageIO.write(binaryImage, "jpg", binaryFile);
+		
+		
 		Tesseract instance = Tesseract.getInstance(); //
 
 		try {
 
-			String result = instance.doOCR(imageFile);
+			String result = instance.doOCR(binaryFile);
+			String[] results = result.split("\n");
+			int i=0;
+			int level = 0;
+			
+			Map<String, String> licenseInfo = new HashMap<>();
+			while (i < results.length){
+				String temp = results[i++];
+				temp = temp.replaceAll("[^0-9a-zA-Z\\s]", "");
+				if (!temp.trim().equals("") && !temp.trim().equals("\n")){
+					
+					if (level == 0){
+						licenseInfo.put("header", temp);
+						level ++;	
+						continue;
+					}
+					
+					if (level == 1){
+						licenseInfo.put("form-info", temp);
+						level ++;
+						continue;
+					}
+					
+					/*if (level == 2){
+						level ++;
+						continue;
+					}*/
+					
+					if (level == 2){
+						licenseInfo.put("firstname", temp);
+						level ++;
+						continue;
+					}
+					
+					if (level == 3){
+						licenseInfo.put("lastname", temp);
+						level ++;
+						continue;
+					}
+					
+					/*if (level == 4){
+						level ++;
+						continue;
+					}*/
+					
+					if (level == 4){
+						licenseInfo.put("addr1", temp);
+						level ++;
+						continue;
+					}
+					
+					if (level == 5){
+						licenseInfo.put("addr2", temp);
+						level ++;
+						continue;
+					}
+					
+					if (level == 6){
+						licenseInfo.put("addr3", temp);
+						level ++;
+						continue;
+					}
+					
+				}
+								
+			}
+			
+			
 			System.out.println(result);
-			return result;
+			
+			//result = result.replaceAll("[^a-zA-Z0-9\b]","");
+			Gson gson = new Gson();
+			return gson.toJson(licenseInfo);
 		} catch (TesseractException e) {
-			e.printStackTrace();
-		} catch (Exception e){
-			e.printStackTrace();
+			System.err.println(e.getMessage());
 		}
 		return "No Output";
-
+		}catch(Exception e){
+			return "No Output";
+		}
 	}
 	
 }
