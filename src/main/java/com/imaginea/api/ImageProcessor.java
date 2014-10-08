@@ -3,7 +3,6 @@ package com.imaginea.api;
 import static spark.Spark.get;
 import static spark.Spark.post;
 
-import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,14 +14,17 @@ import java.util.Map;
 import javax.imageio.ImageIO;
 import javax.servlet.MultipartConfigElement;
 import javax.servlet.http.Part;
-
-import com.google.gson.Gson;
-import com.imaginea.process.OtsuBinarize;
+import javax.swing.JOptionPane;
 
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 import spark.ModelAndView;
 import spark.template.freemarker.FreeMarkerEngine;
+import Catalano.Imaging.FastBitmap;
+import Catalano.Imaging.Filters.BradleyLocalThreshold;
+
+import com.google.gson.Gson;
+import com.imaginea.process.OtsuBinarize;
 
 
 
@@ -84,10 +86,32 @@ public class ImageProcessor {
 			BufferedImage grayScale = OtsuBinarize.toGray(inputImage);
 			BufferedImage binaryImage = OtsuBinarize.binarize(grayScale);
 			
-			File binaryFile = new File("tempBinaryFile.jpg");
+			File binaryFile = new File("tempBinary-otsu.jpg");
 			ImageIO.write(binaryImage, "jpg", binaryFile);
 		
 		
+			try{
+			FastBitmap fb = new FastBitmap(inputImage);
+	       // fb.toRGB();
+	       // JOptionPane.showMessageDialog(null, fb.toIcon(), "Original image", -1);
+	        fb.toGrayscale();
+	        BradleyLocalThreshold bradley = new BradleyLocalThreshold();
+	        
+	        bradley.setPixelBrightnessDifferenceLimit(0.1f);
+	        bradley.setWindowSize(15);
+	        System.out.println("window size: "+bradley.getWindowSize());
+	        System.out.println("percentage: "+bradley.getPixelBrightnessDifferenceLimit());
+	        bradley.applyInPlace(fb);
+	        BufferedImage outputImage = fb.toBufferedImage();
+	    	File binaryFile1 = new File("tempBinary-bradley-0.1.jpg");
+	    	ImageIO.write(outputImage, "jpg", binaryFile1);
+			}catch(Exception e){
+				e.printStackTrace();
+			}catch (Error e){
+				System.out.print(e.getMessage());
+			}
+	       // JOptionPane.showMessageDialog(null, fb.toIcon(), "Result", -1);
+			
 		Tesseract instance = Tesseract.getInstance(); //
 
 		try {

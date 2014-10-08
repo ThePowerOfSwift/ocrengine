@@ -71,7 +71,7 @@
         <artifactId>tesslib1</artifactId>
         <version>0.5.1</version>
         <scope>system</scope>
-        <systemPath>${project.basedir}/src/main/webapp/lib/libtesseract302.dll</systemPath>
+        <systemPath>${project.basedir}/src/main/webapp/lib/Catalano.Core.jar</systemPath>
     </dependency>
     
     <dependency>
@@ -79,8 +79,27 @@
         <artifactId>tesslib2</artifactId>
         <version>0.5.1</version>
         <scope>system</scope>
-        <systemPath>${project.basedir}/src/main/webapp/lib/liblept168.dll</systemPath>
+        <systemPath>${project.basedir}/src/main/webapp/lib/Catalano.Image.jar</systemPath>
     </dependency>
+    
+     <dependency>
+        <groupId>com.sparkjava</groupId>
+        <artifactId>tesslib3</artifactId>
+        <version>0.5.1</version>
+        <scope>system</scope>
+        <systemPath>${project.basedir}/src/main/webapp/lib/Catalano.Math.jar</systemPath>
+    </dependency>
+    
+     <dependency>
+        <groupId>com.sparkjava</groupId>
+        <artifactId>tesslib4</artifactId>
+        <version>0.5.1</version>
+        <scope>system</scope>
+        <systemPath>${project.basedir}/src/main/webapp/lib/Catalano.Statistics.jar</systemPath>
+    </dependency>
+    
+    
+    
     
   </dependencies>
   
