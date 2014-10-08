@@ -5,7 +5,7 @@
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     </head>
     <body>
-        <form method="POST" action="hello" enctype="multipart/form-data" >
+        <form method="POST" action="process" enctype="multipart/form-data" >
             File:
             <input type="file" name="file" id="file" /> <br/>
             Destination:

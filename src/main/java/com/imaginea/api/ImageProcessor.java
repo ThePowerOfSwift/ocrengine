@@ -42,7 +42,7 @@ public class ImageProcessor {
             return new ModelAndView(attributes, "index.ftl");
         }, new FreeMarkerEngine());
 		
-		post("/hello", (req, res) -> {			
+		post("/process", (req, res) -> {			
 		
 			MultipartConfigElement multipartConfigElement = new MultipartConfigElement("/tmp");
 			   req.raw().setAttribute("org.eclipse.multipartConfig", multipartConfigElement);			  
