@@ -90,7 +90,6 @@ public class ImageProcessor {
 			ImageIO.write(binaryImage, "jpg", binaryFile);
 		
 		
-			try{
 			FastBitmap fb = new FastBitmap(inputImage);
 	       // fb.toRGB();
 	       // JOptionPane.showMessageDialog(null, fb.toIcon(), "Original image", -1);
@@ -99,35 +98,51 @@ public class ImageProcessor {
 	        
 	        bradley.setPixelBrightnessDifferenceLimit(0.1f);
 	        bradley.setWindowSize(15);
-	        System.out.println("window size: "+bradley.getWindowSize());
-	        System.out.println("percentage: "+bradley.getPixelBrightnessDifferenceLimit());
+	        
 	        bradley.applyInPlace(fb);
+	        
 	        BufferedImage outputImage = fb.toBufferedImage();
 	    	File binaryFile1 = new File("tempBinary-bradley-0.1.jpg");
 	    	ImageIO.write(outputImage, "jpg", binaryFile1);
-			}catch(Exception e){
-				e.printStackTrace();
-			}catch (Error e){
-				System.out.print(e.getMessage());
-			}
+			
 	       // JOptionPane.showMessageDialog(null, fb.toIcon(), "Result", -1);
 			
 		Tesseract instance = Tesseract.getInstance(); //
 
 		try {
 
-			String result = instance.doOCR(binaryFile);
+			String result = instance.doOCR(binaryFile1);
 			String[] results = result.split("\n");
 			int i=0;
 			int level = 0;
 			
 			Map<String, String> licenseInfo = new HashMap<>();
+			Map<String, String> genericInfo = new HashMap<>();
+			
 			while (i < results.length){
 				String temp = results[i++];
 				temp = temp.replaceAll("[^0-9a-zA-Z\\s]", "");
 				if (!temp.trim().equals("") && !temp.trim().equals("\n")){
 					
-					if (level == 0){
+					genericInfo.put("word - "+i, temp);
+					
+					if (temp.contains("Nam")){
+						temp = temp.substring(temp.indexOf("Nam")+5).trim();
+						licenseInfo.put("firstname", temp);
+					}
+					
+					if (temp.contains("of")){
+						temp = temp.substring(temp.indexOf("of")+4).trim();
+						licenseInfo.put("lastname", temp);
+					}
+					
+					if (temp.contains("Address")){
+						temp = results[i++]+" ";
+						temp += results[i++];
+						licenseInfo.put("address", temp);
+					}
+					
+					/*if (level == 0){
 						licenseInfo.put("header", temp);
 						level ++;	
 						continue;
@@ -139,10 +154,10 @@ public class ImageProcessor {
 						continue;
 					}
 					
-					/*if (level == 2){
+					if (level == 2){
 						level ++;
 						continue;
-					}*/
+					}
 					
 					if (level == 2){
 						licenseInfo.put("firstname", temp);
@@ -156,10 +171,10 @@ public class ImageProcessor {
 						continue;
 					}
 					
-					/*if (level == 4){
+					if (level == 4){
 						level ++;
 						continue;
-					}*/
+					}
 					
 					if (level == 4){
 						licenseInfo.put("addr1", temp);
@@ -177,7 +192,7 @@ public class ImageProcessor {
 						licenseInfo.put("addr3", temp);
 						level ++;
 						continue;
-					}
+					}*/
 					
 				}
 								
@@ -188,6 +203,8 @@ public class ImageProcessor {
 			
 			//result = result.replaceAll("[^a-zA-Z0-9\b]","");
 			Gson gson = new Gson();
+
+			licenseInfo.putAll(genericInfo);			
 			return gson.toJson(licenseInfo);
 		} catch (TesseractException e) {
 			System.err.println(e.getMessage());
