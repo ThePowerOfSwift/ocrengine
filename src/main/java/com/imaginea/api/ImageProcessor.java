@@ -174,6 +174,9 @@ public class ImageProcessor {
 				return gson.toJson(licenseInfo);
 			} catch (TesseractException e) {
 				System.err.println(e.getMessage());
+			} catch (Exception e){
+				logger.error("Exception occurred :", e);
+				System.err.println(e.getMessage());
 			}
 			return "No Output";
 		} catch (Exception e) {
