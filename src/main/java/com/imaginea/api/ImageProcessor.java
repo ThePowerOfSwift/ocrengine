@@ -9,6 +9,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -41,7 +43,7 @@ public class ImageProcessor {
 
 	public static void main(String args[]) {
 
-		setPort(3000);
+		setPort(4565);
 		get("/", (request, response) -> {
 			Map<String, Object> attributes = new HashMap<>();
 			attributes.put("message", "Hello World!");
@@ -95,9 +97,8 @@ public class ImageProcessor {
  * Basic code of Tesseract-OCR,Reads the image and gives the characters from it.
  */
 	public static String process(File imageFile) {
-		
 		try {
-
+			
 			BufferedImage inputImage = ImageIO.read(imageFile);
 			BufferedImage grayScale = OtsuBinarize.toGray(inputImage);
 			BufferedImage binaryImage = OtsuBinarize.binarize(grayScale);
@@ -114,22 +115,26 @@ public class ImageProcessor {
 			
 			BradleyLocalThreshold bradley = new BradleyLocalThreshold();
 			logger.info("Processing Bradley");
-			bradley.setPixelBrightnessDifferenceLimit(0.1f);
-			bradley.setWindowSize(15);
+			bradley.setPixelBrightnessDifferenceLimit(0.05f);
+			bradley.setWindowSize(10);
 
 			bradley.applyInPlace(fb);
 			logger.info("Done Bradley");
 			BufferedImage outputImage = fb.toBufferedImage();
 			File binaryFile1 = new File("tempBinary-bradley-0.1.jpg");
+			
+		
 			ImageIO.write(outputImage, "jpg", binaryFile1);
             
 			
 
 			Tesseract instance = Tesseract.getInstance(); //
-
+ 
+			//instance.doOCR(new File("file:///home/uttam/Desktop/images"));
+			
 			try {
 
-				String result = instance.doOCR(binaryFile1);
+				String result = instance.doOCR(imageFile);
 				String[] results = result.split("\n");
 				int i = 0;
 				Map<String, String> licenseInfo = new HashMap<>();
