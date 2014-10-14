@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>File Upload</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style type="text/css">
+body {
+	font-size: 13px;
+}
+
+table, tr, td {
+	border: 2px solid gray;
+	border-collapse: collapse;
+	padding: 4px;
+}
+
+label {
+	font-size: 16px;
+}
+
+img {
+	width: 400px;
+	margin: 5px;
+}
+ul {
+	list-style-type: none;
+}
+
+</style>
+</head>
+<body>
+	<table>
+		<tbody>
+			<#list attrs?keys as key>
+			<tr>
+				<td><img alt="${key}" src="${key}"></td>
+				<td>
+					<#assign words = attrs[key]>
+					<ul>
+					<#list words?keys as i>
+						<li>${i} : ${words[i]}</li>
+					</#list>
+					</ul>
+				</td>
+			</tr>
+			</#list>
+		</tbody>
+	</table>
+</body>
+</html>

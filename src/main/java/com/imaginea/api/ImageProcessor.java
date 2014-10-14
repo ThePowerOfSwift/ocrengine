@@ -3,10 +3,12 @@ package com.imaginea.api;
 import static spark.Spark.get;
 import static spark.Spark.post;
 import static spark.SparkBase.setPort;
+import static spark.SparkBase.staticFileLocation;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
@@ -28,7 +30,6 @@ import spark.template.freemarker.FreeMarkerEngine;
 import Catalano.Imaging.FastBitmap;
 import Catalano.Imaging.Filters.BradleyLocalThreshold;
 
-import com.google.gson.Gson;
 import com.imaginea.process.OtsuBinarize;
 
 /*
@@ -38,26 +39,65 @@ import com.imaginea.process.OtsuBinarize;
  */
 
 public class ImageProcessor {
-	private static final Logger logger = Logger
-			.getLogger(ImageProcessor.class);
+
+	private static final Logger logger = Logger.getLogger(ImageProcessor.class);
+	private static final String img_dir_path = "src/test/resources/ima/goodImages/";
+
+	public static Map<String, Map<String, String>> benchmark() {
+		logger.info("Reading images");
+		Map<String, Map<String, String>> map = new HashMap<>();
+
+		try {
+			Files.walk(Paths.get(img_dir_path)).forEach(filePath -> {
+
+				if (Files.isRegularFile(filePath)) {
+					File image = new File(filePath.toString());
+
+					logger.info("Image is sent to the processor");
+					Map<String, String> op = ImageProcessor.process(image);
+
+					// Log the below
+					logger.info("File Name : " + filePath.getFileName());
+					logger.info("Output rendered : " + op);
+					map.put(filePath.getFileName().toString(), op);
+				}
+			});
+
+		} catch (IOException e) {
+			logger.error(e.getCause());
+		}
+
+		return map;
+	}
 
 	public static void main(String args[]) {
 
 		setPort(4565);
-		get("/", (request, response) -> {
+		staticFileLocation("/goodImages");
+		get("/test", (request, response) -> {
 			Map<String, Object> attributes = new HashMap<>();
 			attributes.put("message", "Hello World!");
 
 			// The hello.ftl file is located in directory:
 			// src/test/resources/spark/template/freemarker
-				return new ModelAndView(attributes, "index.ftl");
+				return new ModelAndView(attributes, "index.html");
 			}, new FreeMarkerEngine());
+
+		get("/benchmark", (request, response) -> {
+
+			Map<String, Object> attrs = new HashMap<>();
+			attrs.put("attrs", benchmark());
+
+			return new ModelAndView(attrs, "benchmark.html");
+
+		}, new FreeMarkerEngine());
 
 		post("/process",
 				(req, res) -> {
 
 					MultipartConfigElement multipartConfigElement = new MultipartConfigElement(
 							"/tmp");
+
 					req.raw().setAttribute("org.eclipse.multipartConfig",
 							multipartConfigElement);
 					try {
@@ -94,11 +134,12 @@ public class ImageProcessor {
 	}
 
 	/*
- * Basic code of Tesseract-OCR,Reads the image and gives the characters from it.
- */
-	public static String process(File imageFile) {
+	 * Basic code of Tesseract-OCR,Reads the image and gives the characters from
+	 * it.
+	 */
+	public static Map<String, String> process(File imageFile) {
 		try {
-			
+
 			BufferedImage inputImage = ImageIO.read(imageFile);
 			BufferedImage grayScale = OtsuBinarize.toGray(inputImage);
 			BufferedImage binaryImage = OtsuBinarize.binarize(grayScale);
@@ -108,11 +149,10 @@ public class ImageProcessor {
 
 			FastBitmap fb = new FastBitmap(inputImage);
 
-		
 			if (fb.isRGB()) {
 				fb.toGrayscale();
 			}
-			
+
 			BradleyLocalThreshold bradley = new BradleyLocalThreshold();
 			logger.info("Processing Bradley");
 			bradley.setPixelBrightnessDifferenceLimit(0.05f);
@@ -122,16 +162,13 @@ public class ImageProcessor {
 			logger.info("Done Bradley");
 			BufferedImage outputImage = fb.toBufferedImage();
 			File binaryFile1 = new File("tempBinary-bradley-0.1.jpg");
-			
-		
+
 			ImageIO.write(outputImage, "jpg", binaryFile1);
-            
-			
 
 			Tesseract instance = Tesseract.getInstance(); //
- 
-			//instance.doOCR(new File("file:///home/uttam/Desktop/images"));
-			
+
+			// instance.doOCR(new File("file:///home/uttam/Desktop/images"));
+
 			try {
 
 				String result = instance.doOCR(imageFile);
@@ -165,28 +202,25 @@ public class ImageProcessor {
 							licenseInfo.put("address", temp);
 						}
 
-
 					}
 
 				}
 
 				System.out.println(result);
 
-		
-				Gson gson = new Gson();
-
 				licenseInfo.putAll(genericInfo);
-				return gson.toJson(licenseInfo);
+
+				return licenseInfo;
 			} catch (TesseractException e) {
 				System.err.println(e.getMessage());
-			} catch (Exception e){
+			} catch (Exception e) {
 				logger.error("Exception occurred :", e);
 				System.err.println(e.getMessage());
 			}
-			return "No Output";
+			return null;
 		} catch (Exception e) {
 			e.printStackTrace();
-			return "No Output";
+			return null;
 		}
 	}
 
