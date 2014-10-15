@@ -34,15 +34,31 @@ ul {
 			<#list attrs?keys as key>
 			<tr>
 				<td><img alt="${key}" src="${key}"></td>
+			</tr>
+			<tr>	
 				<td>
 					<#assign words = attrs[key]>
-					<ul>
+					<table>
+					<tr>				
 					<#list words?keys as i>
-						<li>${i} : ${words[i]}</li>
-					</#list>
-					</ul>
+					    <td>${i}</td>
+					</#list>    
+					</tr>
+					<tr>
+					<#list words?keys as i>
+						<td>
+						<#list words[i] as prop>
+							${prop} % 
+						</#list>
+						</td>
+					</#list>	
+						</tr>
+						
+					
+					</table>
 				</td>
 			</tr>
+			<hr />
 			</#list>
 		</tbody>
 	</table>

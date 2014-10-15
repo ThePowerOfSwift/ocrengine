@@ -7,21 +7,29 @@ import static spark.SparkBase.staticFileLocation;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.nio.IntBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.servlet.MultipartConfigElement;
 import javax.servlet.http.Part;
 
+import net.sourceforge.tess4j.TessAPI1;
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
+import net.sourceforge.vietocr.ImageIOHelper;
 
 import org.apache.log4j.Logger;
 
@@ -31,6 +39,7 @@ import Catalano.Imaging.FastBitmap;
 import Catalano.Imaging.Filters.BradleyLocalThreshold;
 
 import com.imaginea.process.OtsuBinarize;
+import com.sun.jna.Pointer;
 
 /*
  *   Implements OCR on a Image and recognizes the text in it.
@@ -39,29 +48,35 @@ import com.imaginea.process.OtsuBinarize;
  */
 
 public class ImageProcessor {
-
+	static String datapath = "./";
+	static TessAPI1.TessBaseAPI handle;
+	static TessAPI1 api;
+	static String language = "eng";
 	private static final Logger logger = Logger.getLogger(ImageProcessor.class);
 	private static final String img_dir_path = "src/test/resources/ima/goodImages/";
 
-	public static Map<String, Map<String, String>> benchmark() {
+	public static Map<String, Map<String, ArrayList>> benchmark() {
 		logger.info("Reading images");
-		Map<String, Map<String, String>> map = new HashMap<>();
+		Map<String, Map<String, ArrayList>> map = new HashMap<>();
 
 		try {
 			Files.walk(Paths.get(img_dir_path)).forEach(filePath -> {
 
-				if (Files.isRegularFile(filePath)) {
-					File image = new File(filePath.toString());
-
-					logger.info("Image is sent to the processor");
-					Map<String, String> op = ImageProcessor.process(image);
-
-					// Log the below
-					logger.info("File Name : " + filePath.getFileName());
-					logger.info("Output rendered : " + op);
-					map.put(filePath.getFileName().toString(), op);
+			if (Files.isRegularFile(filePath)) {
+				File image = new File(filePath.toString());
+				logger.info("Image is sent to the processor");
+				Map<String, ArrayList> op = null;
+				try {
+					op = ImageProcessor.newProcess(image);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
-			});
+				logger.info("File Name : "+ filePath.getFileName());
+				logger.info("Output rendered : " + op);
+				map.put(filePath.getFileName().toString(),op);
+								}
+							});
 
 		} catch (IOException e) {
 			logger.error(e.getCause());
@@ -137,6 +152,63 @@ public class ImageProcessor {
 	 * Basic code of Tesseract-OCR,Reads the image and gives the characters from
 	 * it.
 	 */
+	public static Map<String, ArrayList> newProcess(File imageFile)
+			throws FileNotFoundException, IOException {
+		Map<String, ArrayList> map = new LinkedHashMap<String, ArrayList>();
+		handle = TessAPI1.TessBaseAPICreate();
+		System.out.println("TessBaseAPIGetIterator");
+		BufferedImage image = ImageIO.read(new FileInputStream(imageFile));
+		ByteBuffer buf = ImageIOHelper.convertImageData(image);
+		int bpp = image.getColorModel().getPixelSize();
+		int bytespp = bpp / 8;
+		int bytespl = (int) Math.ceil(image.getWidth() * bpp / 8.0);
+		TessAPI1.TessBaseAPIInit3(handle, datapath, language);
+		TessAPI1.TessBaseAPISetPageSegMode(handle,
+				TessAPI1.TessPageSegMode.PSM_AUTO);
+		TessAPI1.TessBaseAPISetImage(handle, buf, image.getWidth(),
+				image.getHeight(), bytespp, bytespl);
+		TessAPI1.TessBaseAPIRecognize(handle, null);
+		TessAPI1.TessResultIterator ri = TessAPI1
+				.TessBaseAPIGetIterator(handle);
+		TessAPI1.TessPageIterator pi = TessAPI1
+				.TessResultIteratorGetPageIterator(ri);
+		TessAPI1.TessPageIteratorBegin(pi);
+
+		do {
+			Pointer ptr = TessAPI1.TessResultIteratorGetUTF8Text(ri,
+					TessAPI1.TessPageIteratorLevel.RIL_WORD);
+			String word = ptr.getString(0);
+			TessAPI1.TessDeleteText(ptr);
+			float confidence = TessAPI1.TessResultIteratorConfidence(ri,
+					TessAPI1.TessPageIteratorLevel.RIL_WORD);
+			IntBuffer leftB = IntBuffer.allocate(1);
+			IntBuffer topB = IntBuffer.allocate(1);
+			IntBuffer rightB = IntBuffer.allocate(1);
+			IntBuffer bottomB = IntBuffer.allocate(1);
+			TessAPI1.TessPageIteratorBoundingBox(pi,
+					TessAPI1.TessPageIteratorLevel.RIL_WORD, leftB, topB,
+					rightB, bottomB);
+			int left = leftB.get();
+			int top = topB.get();
+			int right = rightB.get();
+			int bottom = bottomB.get();
+			ArrayList<Float> list = new ArrayList<Float>();
+			/*list.add((float) left);
+			list.add((float) top);
+			list.add((float) right);
+			list.add((float) bottom);*/
+			list.add(confidence);
+			word = word.replaceAll("[^0-9a-zA-Z\\s]", "");
+			if (!word.trim().equals("") && !word.trim().equals("\n") && confidence > 60) {
+				map.put(word, list);
+			}
+		} while (TessAPI1.TessPageIteratorNext(pi,
+				TessAPI1.TessPageIteratorLevel.RIL_WORD) == TessAPI1.TRUE);
+
+		return map;
+
+	}
+
 	public static Map<String, String> process(File imageFile) {
 		try {
 
