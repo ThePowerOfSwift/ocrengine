@@ -53,7 +53,7 @@ public class ImageProcessor {
 	static TessAPI1 api;
 	static String language = "eng";
 	private static final Logger logger = Logger.getLogger(ImageProcessor.class);
-	private static final String img_dir_path = "src/main/resources/Images/";
+	private static final String img_dir_path = "src/main/resources/goodImages/";
 
 	public static Map<String, Map<String, ArrayList>> benchmark() {
 		logger.info("Reading images");
