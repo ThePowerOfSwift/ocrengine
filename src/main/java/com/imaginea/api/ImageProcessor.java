@@ -53,7 +53,7 @@ public class ImageProcessor {
 	static TessAPI1 api;
 	static String language = "eng";
 	private static final Logger logger = Logger.getLogger(ImageProcessor.class);
-	private static final String img_dir_path = "src/test/resources/ima/goodImages/";
+	private static final String img_dir_path = "src/main/resources/Images/";
 
 	public static Map<String, Map<String, ArrayList>> benchmark() {
 		logger.info("Reading images");
@@ -243,7 +243,7 @@ public class ImageProcessor {
 
 			try {
 
-				String result = instance.doOCR(imageFile);
+				String result = instance.doOCR(binaryFile);
 				String[] results = result.split("\n");
 				int i = 0;
 				Map<String, String> licenseInfo = new HashMap<>();
