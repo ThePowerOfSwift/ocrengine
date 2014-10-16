@@ -1,7 +1,7 @@
 package com.imaginea.ocr.api;
 
-import static com.imaginea.ocr.Props.static_file_loc;
-import static com.imaginea.ocr.Props.web_port;
+import static com.imaginea.ocr.Props.STATIC_FILE_LOC;
+import static com.imaginea.ocr.Props.WEB_PORT;
 import static spark.Spark.get;
 import static spark.Spark.post;
 import static spark.SparkBase.setPort;
@@ -23,24 +23,30 @@ import spark.ModelAndView;
 import spark.template.freemarker.FreeMarkerEngine;
 
 import com.imaginea.ocr.Benchmark;
+import com.imaginea.ocr.Props;
 
 public class Web {
 
 	private static final Logger logger = Logger.getLogger(Web.class);
 
+	// Constants
+	private static final String MULTIPART_CONFIG = "org.eclipse.multipartConfig";
+	
+	
 	public static void main(String args[]) {
 
-		setPort(web_port);
-		staticFileLocation(static_file_loc);
+		setPort(WEB_PORT);
+		staticFileLocation(STATIC_FILE_LOC);
 
 		/* --- Web API End Points --- */
 		
 		// process a given file
 		post("/process", (req, res) -> {
+			logger.info("Web request : /process");
+			
+			MultipartConfigElement multipartConfigElement = new MultipartConfigElement(Props.TEMP_DIR);
 
-			MultipartConfigElement multipartConfigElement = new MultipartConfigElement("/tmp");
-
-			req.raw().setAttribute("org.eclipse.multipartConfig", multipartConfigElement);
+			req.raw().setAttribute(MULTIPART_CONFIG, multipartConfigElement);
 			try {
 				Part file = req.raw().getPart("file");
 
@@ -73,6 +79,8 @@ public class Web {
 		
 		// Benchmark results 
 		get("/benchmark", (request, response) -> {
+			logger.info("Web request : /benchmark");
+			
 			Map<String, Object> attrs = new HashMap<>();
 			attrs.put("attrs", Benchmark.standardImagesSet());
 	
@@ -81,8 +89,11 @@ public class Web {
 		
 		// Health Check
 		get("/test", (request, response) -> {
+			logger.info("Web request : /test");
+			
 			Map<String, Object> attributes = new HashMap<>();
 			attributes.put("message", "Hello World!");
+			
 			return new ModelAndView(attributes, "index.html");
 		}, new FreeMarkerEngine());
 

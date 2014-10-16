@@ -17,26 +17,24 @@ public class Benchmark {
 	private static final Logger logger = Logger.getLogger(Benchmark.class);
 
 	public static Map<String, Map<String, List<Float>>> standardImagesSet() {
-		logger.info("Reading images");
+		logger.info("Benchmarking :: processing standard set of images ...");
+
 		Map<String, Map<String, List<Float>>> map = new HashMap<>();
-
 		try {
-			Files.walk(Paths.get(Props.std_img_dir_path)).forEach(filePath -> {
-
+			Files.walk(Paths.get(Props.STD_IMG_DIR)).forEach(filePath -> {
 				if (Files.isRegularFile(filePath)) {
+
 					File image = new File(filePath.toString());
-					logger.info("Image is sent to the processor");
 					Map<String, List<Float>> op = null;
 					try {
 						op = ImageProcessor.newProcess(image);
 					} catch (Exception e) {
 						logger.error(e.getMessage());
 						e.printStackTrace();
-
 					}
-					
-					logger.info("File Name : " + filePath.getFileName());
-					logger.info("Output rendered : " + op);
+
+					logger.debug("File Name : " + filePath.getFileName());
+					logger.debug("Output rendered : " + op);
 					map.put(filePath.getFileName().toString(), op);
 				}
 			});
