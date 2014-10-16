@@ -33,10 +33,13 @@ ul {
 		<tbody>
 			<#list attrs?keys as key>
 			<tr>
+				<td><label>${key}</label></td>
 				<td><img alt="${key}" src="${key}"></td>
 			</tr>
-			<tr>	
+			<tr>
+				<td></td>	
 				<td>
+					<#if attrs[key]?? && attrs[key]?has_content>	
 					<#assign words = attrs[key]>
 					<table>
 					<tr>				
@@ -56,9 +59,11 @@ ul {
 						
 					
 					</table>
+					<#else>
+					  No output
+					</#if>
 				</td>
-			</tr>
-			<hr />
+			</tr>			
 			</#list>
 		</tbody>
 	</table>
