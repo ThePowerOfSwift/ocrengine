@@ -20,6 +20,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.imageio.ImageIO;
@@ -55,9 +56,9 @@ public class ImageProcessor {
 	private static final Logger logger = Logger.getLogger(ImageProcessor.class);
 	private static final String img_dir_path = "src/main/resources/goodImages/";
 
-	public static Map<String, Map<String, ArrayList>> benchmark() {
+	public static Map<String, Map<String, List<Float>>> benchmark() {
 		logger.info("Reading images");
-		Map<String, Map<String, ArrayList>> map = new HashMap<>();
+		Map<String, Map<String, List<Float>>> map = new HashMap<>();
 
 		try {
 			Files.walk(Paths.get(img_dir_path)).forEach(filePath -> {
@@ -65,7 +66,7 @@ public class ImageProcessor {
 			if (Files.isRegularFile(filePath)) {
 				File image = new File(filePath.toString());
 				logger.info("Image is sent to the processor");
-				Map<String, ArrayList> op = null;
+				Map<String, List<Float>> op = null;
 				try {
 					op = ImageProcessor.newProcess(image);
 				} catch (Exception e) {
@@ -152,9 +153,9 @@ public class ImageProcessor {
 	 * Basic code of Tesseract-OCR,Reads the image and gives the characters from
 	 * it.
 	 */
-	public static Map<String, ArrayList> newProcess(File imageFile)
+	public static Map<String, List<Float>> newProcess(File imageFile)
 			throws FileNotFoundException, IOException {
-		Map<String, ArrayList> map = new LinkedHashMap<String, ArrayList>();
+		Map<String, List<Float>> map = new LinkedHashMap<>();
 		handle = TessAPI1.TessBaseAPICreate();
 		System.out.println("TessBaseAPIGetIterator");
 		BufferedImage image = ImageIO.read(new FileInputStream(imageFile));
