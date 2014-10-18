@@ -90,7 +90,7 @@ public class ImageProcessor {
 
 		setPort(4565);
 		staticFileLocation("/goodImages");
-		get("/test", (request, response) -> {
+		get("/", (request, response) -> {
 			Map<String, Object> attributes = new HashMap<>();
 			attributes.put("message", "Hello World!");
 
