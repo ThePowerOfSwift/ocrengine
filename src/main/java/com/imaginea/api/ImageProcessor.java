@@ -54,7 +54,7 @@ public class ImageProcessor {
 	static TessAPI1 api;
 	static String language = "eng";
 	private static final Logger logger = Logger.getLogger(ImageProcessor.class);
-	private static final String img_dir_path = "src/main/resources/goodImages/";
+	private static final String img_dir_path = "src/main/resources/ImageMagick/";
 
 	public static Map<String, Map<String, List<Float>>> benchmark() {
 		logger.info("Reading images");
@@ -89,7 +89,7 @@ public class ImageProcessor {
 	public static void main(String args[]) {
 
 		setPort(4565);
-		staticFileLocation("/goodImages");
+		staticFileLocation("/ImageMagick");
 		get("/", (request, response) -> {
 			Map<String, Object> attributes = new HashMap<>();
 			attributes.put("message", "Hello World!");
@@ -159,6 +159,7 @@ public class ImageProcessor {
 		handle = TessAPI1.TessBaseAPICreate();
 		System.out.println("TessBaseAPIGetIterator");
 		BufferedImage image = ImageIO.read(new FileInputStream(imageFile));
+		System.out.println(image.getHeight());
 		ByteBuffer buf = ImageIOHelper.convertImageData(image);
 		int bpp = image.getColorModel().getPixelSize();
 		int bytespp = bpp / 8;
@@ -177,17 +178,17 @@ public class ImageProcessor {
 
 		do {
 			Pointer ptr = TessAPI1.TessResultIteratorGetUTF8Text(ri,
-					TessAPI1.TessPageIteratorLevel.RIL_WORD);
+					TessAPI1.TessPageIteratorLevel.RIL_TEXTLINE);
 			String word = ptr.getString(0);
 			TessAPI1.TessDeleteText(ptr);
 			float confidence = TessAPI1.TessResultIteratorConfidence(ri,
-					TessAPI1.TessPageIteratorLevel.RIL_WORD);
+					TessAPI1.TessPageIteratorLevel.RIL_TEXTLINE);
 			IntBuffer leftB = IntBuffer.allocate(1);
 			IntBuffer topB = IntBuffer.allocate(1);
 			IntBuffer rightB = IntBuffer.allocate(1);
 			IntBuffer bottomB = IntBuffer.allocate(1);
 			TessAPI1.TessPageIteratorBoundingBox(pi,
-					TessAPI1.TessPageIteratorLevel.RIL_WORD, leftB, topB,
+					TessAPI1.TessPageIteratorLevel.RIL_TEXTLINE, leftB, topB,
 					rightB, bottomB);
 			int left = leftB.get();
 			int top = topB.get();
@@ -204,7 +205,7 @@ public class ImageProcessor {
 				map.put(word, list);
 			}
 		} while (TessAPI1.TessPageIteratorNext(pi,
-				TessAPI1.TessPageIteratorLevel.RIL_WORD) == TessAPI1.TRUE);
+				TessAPI1.TessPageIteratorLevel.RIL_TEXTLINE) == TessAPI1.TRUE);
 
 		return map;
 

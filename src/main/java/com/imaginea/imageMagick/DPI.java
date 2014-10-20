@@ -22,7 +22,7 @@ public class DPI {
 	public static void saveGridImage(File output,BufferedImage input) throws IOException {
 	    output.delete();
 BufferedImage gridImage =input; 
-	    final String formatName = "jpeg";
+	    final String formatName = "jpg";
 
 	    for (Iterator<ImageWriter> iw = ImageIO.getImageWritersByFormatName(formatName); iw.hasNext();) {
 	       ImageWriter writer = iw.next();

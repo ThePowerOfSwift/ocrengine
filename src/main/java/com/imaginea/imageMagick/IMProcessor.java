@@ -13,6 +13,7 @@ import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.Raster;
 import java.awt.image.WritableRaster;
 import java.io.File;
+import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
@@ -21,22 +22,29 @@ import magick.MagickImage;
 import magick.util.DisplayImageMetaData;
 
 public class IMProcessor {
-	private static String path = "/home/uttam/Desktop/ima/images/IMG10_ReallyGood.JPG";
+	private static String path = "src/main/resources/goodImages/IMG10_ReallyGood_150dpi.JPG";
 
 	public static void main(String[] args) {
+		try {
+			BufferedImage input= ImageIO.read(new File(path));
+			ImageIO.write(input, "jpg",new File("src/main/resources/ImageMagick/before.jpg"));
+			ImageIO.write(input, "jpg",new File("/home/uttam/Desktop/ima/output/before.jpg"));
+	       	
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 
 		try {
-			MagickImage MImage = new MagickImage();
-			MImage.readImage(new ImageInfo(path));
-			// autoOrient.enhanceImage();
+			MagickImage Image = new MagickImage();
+			Image.readImage(new ImageInfo(path));
+			MagickImage MImage= Image.enhanceImage().reduceNoiseImage(2);
 			int height = (int) MImage.getDimension().getHeight();
 			int width = (int) MImage.getDimension().getWidth();
-			MImage.setXResolution(300);
-			MImage.setYResolution(300);
-		
+	
 			System.out.println(MImage.getXResolution());
 			System.out.println("height: " + height + " Width:" + width);
-			MagickImage scale = MImage.scaleImage(1* width, 1* height);
+			MagickImage scale = MImage.scaleImage(2* width, 2* height);
 			 scale.setFilter(3); // Triangular filter
 			MagickImage set = scale.autoOrientImage();
 
@@ -44,12 +52,15 @@ public class IMProcessor {
 
 			BufferedImage buffImage = IMProcessor
 					.magickImageToBufferedImage(set);
-			// DPI.saveGridImage(
-			// new File("/home/uttam/Desktop/ima/output/out.jpg"),
-			// buffImage);
-			ImageIO.write(buffImage, "jpg", new File(
-					"/home/uttam/Desktop/ima/output/out.jpg"));
-
+			 DPI.saveGridImage(
+			 new File("src/main/resources/ImageMagick/after.jpg"),
+			buffImage);
+			 DPI.saveGridImage(
+					 new File("/home/uttam/Desktop/ima/output/after1.jpg"),
+					buffImage);
+	//		ImageIO.write(buffImage, "jpg", new File(
+	//				"src/main/resources/ImageMagick/after.jpg"));
+//
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
