@@ -20,6 +20,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -32,6 +33,7 @@ import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 import net.sourceforge.vietocr.ImageIOHelper;
 
+import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.log4j.Logger;
 
 import spark.ModelAndView;
@@ -54,7 +56,7 @@ public class ImageProcessor {
 	static TessAPI1 api;
 	static String language = "eng";
 	private static final Logger logger = Logger.getLogger(ImageProcessor.class);
-	private static final String img_dir_path = "src/main/resources/ImageMagick/";
+	private static final String img_dir_path = "src/main/resources/goodImages/";
 
 	public static Map<String, Map<String, List<Float>>> benchmark() {
 		logger.info("Reading images");
@@ -89,7 +91,7 @@ public class ImageProcessor {
 	public static void main(String args[]) {
 
 		setPort(4565);
-		staticFileLocation("/ImageMagick");
+		staticFileLocation("/goodImages");
 		get("/", (request, response) -> {
 			Map<String, Object> attributes = new HashMap<>();
 			attributes.put("message", "Hello World!");
@@ -156,10 +158,11 @@ public class ImageProcessor {
 	public static Map<String, List<Float>> newProcess(File imageFile)
 			throws FileNotFoundException, IOException {
 		Map<String, List<Float>> map = new LinkedHashMap<>();
+		Map<String, Integer> dimensionmap = new LinkedHashMap<>();
+		
 		handle = TessAPI1.TessBaseAPICreate();
 		System.out.println("TessBaseAPIGetIterator");
 		BufferedImage image = ImageIO.read(new FileInputStream(imageFile));
-		System.out.println(image.getHeight());
 		ByteBuffer buf = ImageIOHelper.convertImageData(image);
 		int bpp = image.getColorModel().getPixelSize();
 		int bytespp = bpp / 8;
@@ -190,23 +193,20 @@ public class ImageProcessor {
 			TessAPI1.TessPageIteratorBoundingBox(pi,
 					TessAPI1.TessPageIteratorLevel.RIL_TEXTLINE, leftB, topB,
 					rightB, bottomB);
-			int left = leftB.get();
 			int top = topB.get();
-			int right = rightB.get();
-			int bottom = bottomB.get();
 			ArrayList<Float> list = new ArrayList<Float>();
-			/*list.add((float) left);
-			list.add((float) top);
-			list.add((float) right);
-			list.add((float) bottom);*/
 			list.add(confidence);
 			word = word.replaceAll("[^0-9a-zA-Z\\s]", "");
+			
 			if (!word.trim().equals("") && !word.trim().equals("\n") && confidence > 60) {
 				map.put(word, list);
+				dimensionmap.put(word,top);
 			}
 		} while (TessAPI1.TessPageIteratorNext(pi,
 				TessAPI1.TessPageIteratorLevel.RIL_TEXTLINE) == TessAPI1.TRUE);
-
+		
+			
+		
 		return map;
 
 	}
@@ -239,8 +239,8 @@ public class ImageProcessor {
 
 			ImageIO.write(outputImage, "jpg", binaryFile1);
 
-			Tesseract instance = Tesseract.getInstance(); //
-
+			Tesseract instance = Tesseract.getInstance();
+			//
 			// instance.doOCR(new File("file:///home/uttam/Desktop/images"));
 
 			try {
