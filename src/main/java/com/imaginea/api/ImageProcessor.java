@@ -6,10 +6,12 @@ import static spark.SparkBase.setPort;
 import static spark.SparkBase.staticFileLocation;
 
 import java.awt.image.BufferedImage;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -20,7 +22,6 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -33,7 +34,6 @@ import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
 import net.sourceforge.vietocr.ImageIOHelper;
 
-import org.apache.commons.math3.exception.DimensionMismatchException;
 import org.apache.log4j.Logger;
 
 import spark.ModelAndView;
@@ -178,6 +178,8 @@ public class ImageProcessor {
 				.TessResultIteratorGetPageIterator(ri);
 		TessAPI1.TessPageIteratorBegin(pi);
 
+		 String pathToFile = imageFile.getPath().concat("txt");
+		 BufferedWriter bw = new BufferedWriter(new FileWriter(pathToFile));
 		do {
 			Pointer ptr = TessAPI1.TessResultIteratorGetUTF8Text(ri,
 					TessAPI1.TessPageIteratorLevel.RIL_TEXTLINE);
@@ -192,18 +194,25 @@ public class ImageProcessor {
 			TessAPI1.TessPageIteratorBoundingBox(pi,
 					TessAPI1.TessPageIteratorLevel.RIL_TEXTLINE, leftB, topB,
 					rightB, bottomB);
-			int top = topB.get();
 			ArrayList<Float> list = new ArrayList<Float>();
 			list.add(confidence);
 			word = word.replaceAll("[^0-9a-zA-Z\\s]", "");
-
+			String line = word + "-"+String.valueOf(confidence);
+			bw.write(line);
+			bw.write("\n");
+			
 			if (!word.trim().equals("") && !word.trim().equals("\n")) {
 				map.put(word, list);
 			}
 
 		} while (TessAPI1.TessPageIteratorNext(pi,
 				TessAPI1.TessPageIteratorLevel.RIL_TEXTLINE) == TessAPI1.TRUE);
-
+		
+		String name = imageFile.getName().concat("-binary");
+		TessAPI1.TessBaseAPIDumpPGM(handle,name);
+		
+		bw.close();
+		 
 		return map;
 
 	}
