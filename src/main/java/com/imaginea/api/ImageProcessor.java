@@ -65,21 +65,21 @@ public class ImageProcessor {
 		try {
 			Files.walk(Paths.get(img_dir_path)).forEach(filePath -> {
 
-			if (Files.isRegularFile(filePath)) {
-				File image = new File(filePath.toString());
-				logger.info("Image is sent to the processor");
-				Map<String, List<Float>> op = null;
-				try {
-					op = ImageProcessor.newProcess(image);
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
+				if (Files.isRegularFile(filePath)) {
+					File image = new File(filePath.toString());
+					logger.info("Image is sent to the processor");
+					Map<String, List<Float>> op = null;
+					try {
+						op = ImageProcessor.newProcess(image);
+					} catch (Exception e) {
+						// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				logger.info("File Name : "+ filePath.getFileName());
+				logger.info("File Name : " + filePath.getFileName());
 				logger.info("Output rendered : " + op);
-				map.put(filePath.getFileName().toString(),op);
-								}
-							});
+				map.put(filePath.getFileName().toString(), op);
+			}
+		}	);
 
 		} catch (IOException e) {
 			logger.error(e.getCause());
@@ -158,8 +158,7 @@ public class ImageProcessor {
 	public static Map<String, List<Float>> newProcess(File imageFile)
 			throws FileNotFoundException, IOException {
 		Map<String, List<Float>> map = new LinkedHashMap<>();
-		Map<String, Integer> dimensionmap = new LinkedHashMap<>();
-		
+
 		handle = TessAPI1.TessBaseAPICreate();
 		System.out.println("TessBaseAPIGetIterator");
 		BufferedImage image = ImageIO.read(new FileInputStream(imageFile));
@@ -197,16 +196,14 @@ public class ImageProcessor {
 			ArrayList<Float> list = new ArrayList<Float>();
 			list.add(confidence);
 			word = word.replaceAll("[^0-9a-zA-Z\\s]", "");
-			
-			if (!word.trim().equals("") && !word.trim().equals("\n") && confidence > 60) {
+
+			if (!word.trim().equals("") && !word.trim().equals("\n")) {
 				map.put(word, list);
-				dimensionmap.put(word,top);
 			}
+
 		} while (TessAPI1.TessPageIteratorNext(pi,
 				TessAPI1.TessPageIteratorLevel.RIL_TEXTLINE) == TessAPI1.TRUE);
-		
-			
-		
+
 		return map;
 
 	}

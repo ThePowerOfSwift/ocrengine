@@ -35,30 +35,23 @@ ul {
 			<tr>
 				<td><label>${key}</label></td>
 				<td><img alt="${key}" src="${key}"></td>
-			</tr>
-			<tr>
-				<td></td>	
 				<td>
-					<#if attrs[key]?? && attrs[key]?has_content>	
-					<#assign words = attrs[key]>
-					<table>
-					<tr>				
-					<#list words?keys as i>
-					    <td>${i}</td>
-					</#list>    
-					</tr>
-					<tr>
-					<#list words?keys as i>
-						<td>
-						<#list words[i] as prop>
-							${prop} % 
-						</#list>
-						</td>
-					</#list>	
-						</tr>
+					<#if attrs[key]?? && attrs[key]?has_content>
+
+						<#assign words = attrs[key]>
+						<table>
 						
-					
-					</table>
+						<#list words?keys as i>
+						    <tr>
+							    <td>${i}</td>
+								<td>
+								<#list words[i] as prop>
+									${prop} % 
+								</#list>
+								</td>
+							</tr>
+						</#list>    
+						</table>
 					<#else>
 					  No output
 					</#if>
