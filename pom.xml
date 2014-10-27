@@ -106,6 +106,12 @@
 			<systemPath>${project.basedir}/src/main/webapp/lib/Catalano.Statistics.jar</systemPath>
 		</dependency>
 
+<dependency>
+	<groupId>jmagick</groupId>
+	<artifactId>jmagick</artifactId>
+	<version>6.6.9</version>
+</dependency>
+
 
 
 

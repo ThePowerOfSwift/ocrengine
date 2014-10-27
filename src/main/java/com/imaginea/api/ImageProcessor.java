@@ -136,7 +136,8 @@ public class ImageProcessor {
 
 						outStream.close();
 
-						return process(targetFile);
+						//return process(targetFile);
+						return newProcess(targetFile);
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -180,6 +181,9 @@ public class ImageProcessor {
 
 		 String pathToFile = imageFile.getPath().concat("txt");
 		 BufferedWriter bw = new BufferedWriter(new FileWriter(pathToFile));
+		 float meanConfidence = 0;
+		 int counter = 0;
+		 
 		do {
 			Pointer ptr = TessAPI1.TessResultIteratorGetUTF8Text(ri,
 					TessAPI1.TessPageIteratorLevel.RIL_TEXTLINE);
@@ -196,6 +200,8 @@ public class ImageProcessor {
 					rightB, bottomB);
 			ArrayList<Float> list = new ArrayList<Float>();
 			list.add(confidence);
+			meanConfidence += confidence;
+			counter ++;
 			word = word.replaceAll("[^0-9a-zA-Z\\s]", "");
 			String line = word + "-"+String.valueOf(confidence);
 			bw.write(line);
@@ -208,11 +214,16 @@ public class ImageProcessor {
 		} while (TessAPI1.TessPageIteratorNext(pi,
 				TessAPI1.TessPageIteratorLevel.RIL_TEXTLINE) == TessAPI1.TRUE);
 		
+		meanConfidence = meanConfidence / counter;
 		String name = imageFile.getName().concat("-binary");
 		TessAPI1.TessBaseAPIDumpPGM(handle,name);
 		
 		bw.close();
 		 
+		ArrayList<Float> meanConfidenceList = new ArrayList<Float>();
+		meanConfidenceList.add(meanConfidence);
+		
+		map.put("meanConfidence", meanConfidenceList);
 		return map;
 
 	}
