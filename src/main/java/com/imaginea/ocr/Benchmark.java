@@ -27,7 +27,7 @@ public class Benchmark {
 					File image = new File(filePath.toString());
 					Map<String, List<Float>> op = null;
 					try {
-						op = ImageProcessor.newProcess(image);
+						op = OCR.newProcess(image);
 					} catch (Exception e) {
 						logger.error(e.getMessage());
 						e.printStackTrace();

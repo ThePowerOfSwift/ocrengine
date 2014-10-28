@@ -1,11 +1,16 @@
 package com.imaginea.ocr;
 
 import java.awt.image.BufferedImage;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -23,6 +28,7 @@ import org.apache.log4j.Logger;
 import Catalano.Imaging.FastBitmap;
 import Catalano.Imaging.Filters.BradleyLocalThreshold;
 
+import com.imaginea.api.Processor;
 import com.imaginea.process.OtsuBinarize;
 import com.sun.jna.Pointer;
 
@@ -30,144 +36,90 @@ public class OCR {
 
 	private static final Logger logger = Logger.getLogger(OCR.class);
 
-	// Tessaract
-	private static TessAPI1.TessBaseAPI tessHandle;
-	private static TessAPI1 tessApi;
+	static TessAPI1.TessBaseAPI handle;
+	static TessAPI1 api;
+	static String language = "eng";
+	static String datapath = "./";
+		/*
+	 * Basic code of Tesseract-OCR,Reads the image and gives the characters from
+	 * it.
+	 */
+	public static Map<String, List<Float>> newProcess(File imageFile)
+			throws FileNotFoundException, IOException {
+		Map<String, List<Float>> map = new LinkedHashMap<>();
+	//	Map<String, List<Float>> map2 = new LinkedHashMap<>();
+		handle = TessAPI1.TessBaseAPICreate();
+		System.out.println("TessBaseAPIGetIterator");
+		BufferedImage image = ImageIO.read(new FileInputStream(imageFile));
+		ByteBuffer buf = ImageIOHelper.convertImageData(image);
+		int bpp = image.getColorModel().getPixelSize();
+		int bytespp = bpp / 8;
+		int bytespl = (int) Math.ceil(image.getWidth() * bpp / 8.0);
+		TessAPI1.TessBaseAPIInit3(handle, datapath, language);
+		TessAPI1.TessBaseAPISetPageSegMode(handle,
+				TessAPI1.TessPageSegMode.PSM_AUTO);
+		TessAPI1.TessBaseAPISetImage(handle, buf, image.getWidth(),
+				image.getHeight(), bytespp, bytespl);
+		TessAPI1.TessBaseAPIRecognize(handle, null);
+		TessAPI1.TessResultIterator ri = TessAPI1
+				.TessBaseAPIGetIterator(handle);
+		TessAPI1.TessPageIterator pi = TessAPI1
+				.TessResultIteratorGetPageIterator(ri);
+		TessAPI1.TessPageIteratorBegin(pi);
 
-	public static Map<String, String> process(File imFile) {
-		try {
+		String pathToFile = imageFile.getPath().concat("txt");
+		BufferedWriter bw = new BufferedWriter(new FileWriter(pathToFile));
+		float meanConfidence = 0;
+		int counter = 0;
+		ArrayList<Float> list;
+		do {
+			Pointer ptr = TessAPI1.TessResultIteratorGetUTF8Text(ri,
+					TessAPI1.TessPageIteratorLevel.RIL_TEXTLINE);
+			String word = ptr.getString(0);
 
-			BufferedImage inputImage = ImageIO.read(imFile);
-			BufferedImage grayScale = OtsuBinarize.toGray(inputImage);
-			BufferedImage binaryImage = OtsuBinarize.binarize(grayScale);
+			TessAPI1.TessDeleteText(ptr);
+			float LineConfidence = TessAPI1.TessResultIteratorConfidence(ri,
+					TessAPI1.TessPageIteratorLevel.RIL_TEXTLINE);
 
-			File binaryFile = new File("tempBinary-otsu.jpg");
-			ImageIO.write(binaryImage, "jpg", binaryFile);
+			IntBuffer leftB = IntBuffer.allocate(1);
+			IntBuffer topB = IntBuffer.allocate(1);
+			IntBuffer rightB = IntBuffer.allocate(1);
+			IntBuffer bottomB = IntBuffer.allocate(1);
 
-			FastBitmap fb = new FastBitmap(inputImage);
+			TessAPI1.TessPageIteratorBoundingBox(pi,
+					TessAPI1.TessPageIteratorLevel.RIL_TEXTLINE, leftB, topB,
+					rightB, bottomB);
+			list = new ArrayList<Float>();
+		
+			
+			word = word.replaceAll("[^0-9a-zA-Z\\s]", "");
+			String line = word + "-" + String.valueOf(LineConfidence);
+			bw.write(line);
+			bw.write("\n");
 
-			if (fb.isRGB()) {
-				fb.toGrayscale();
+			if (!word.trim().equals("") && !word.trim().equals("\n")&& LineConfidence>=55 && word.length()>=5) {
+				list.add(LineConfidence);
+				meanConfidence += LineConfidence;
+				counter++;
+				map.put(word, list);
 			}
 
-			BradleyLocalThreshold bradley = new BradleyLocalThreshold();
-			logger.info("Processing Bradley");
-			bradley.setPixelBrightnessDifferenceLimit(0.05f);
-			bradley.setWindowSize(10);
+		} while (TessAPI1.TessPageIteratorNext(pi,
+				TessAPI1.TessPageIteratorLevel.RIL_TEXTLINE) == TessAPI1.TRUE);
 
-			bradley.applyInPlace(fb);
-			logger.info("Done Bradley");
-			BufferedImage outputImage = fb.toBufferedImage();
-			File binaryFile1 = new File("tempBinary-bradley-0.1.jpg");
-
-			ImageIO.write(outputImage, "jpg", binaryFile1);
-
-			Tesseract instance = Tesseract.getInstance(); //
-
-			// instance.doOCR(new File("file:///home/uttam/Desktop/images"));
-
-			try {
-
-				String result = instance.doOCR(binaryFile);
-				String[] results = result.split("\n");
-				int i = 0;
-				Map<String, String> licenseInfo = new HashMap<>();
-				Map<String, String> genericInfo = new HashMap<>();
-
-				while (i < results.length) {
-					String temp = results[i++];
-					temp = temp.replaceAll("[^0-9a-zA-Z\\s]", "");
-					if (!temp.trim().equals("") && !temp.trim().equals("\n")) {
-
-						genericInfo.put("word - " + i, temp);
-
-						if (temp.contains("Nam")) {
-							temp = temp.substring(temp.indexOf("Nam") + 5).trim();
-							licenseInfo.put("firstname", temp);
-						}
-
-						if (temp.contains("of")) {
-							temp = temp.substring(temp.indexOf("of") + 4).trim();
-							licenseInfo.put("lastname", temp);
-						}
-
-						if (temp.contains("Address")) {
-							temp = results[i++] + " ";
-							temp += results[i++];
-							licenseInfo.put("address", temp);
-						}
-
-					}
-
-				}
-
-				System.out.println(result);
-
-				licenseInfo.putAll(genericInfo);
-
-				return licenseInfo;
-			} catch (TesseractException e) {
-				System.err.println(e.getMessage());
-			} catch (Exception e) {
-				logger.error("Exception occurred :", e);
-				System.err.println(e.getMessage());
-			}
-			return null;
-		} catch (Exception e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
-
-	public static Map<String, List<Float>> processForConfidenceValues(File imageFile) {
-		try {
-			Map<String, List<Float>> map = new LinkedHashMap<>();
-			tessHandle = TessAPI1.TessBaseAPICreate();
-			System.out.println("TessBaseAPIGetIterator");
-			BufferedImage image = ImageIO.read(new FileInputStream(imageFile));
-			ByteBuffer buf = ImageIOHelper.convertImageData(image);
-			int bpp = image.getColorModel().getPixelSize();
-			int bytespp = bpp / 8;
-			int bytespl = (int) Math.ceil(image.getWidth() * bpp / 8.0);
-			TessAPI1.TessBaseAPIInit3(tessHandle, Props.TRAIN_DATA_DIR, Props.OCR_LANG);
-			TessAPI1.TessBaseAPISetPageSegMode(tessHandle, TessAPI1.TessPageSegMode.PSM_AUTO);
-			TessAPI1.TessBaseAPISetImage(tessHandle, buf, image.getWidth(), image.getHeight(), bytespp, bytespl);
-			TessAPI1.TessBaseAPIRecognize(tessHandle, null);
-			TessAPI1.TessResultIterator ri = TessAPI1.TessBaseAPIGetIterator(tessHandle);
-			TessAPI1.TessPageIterator pi = TessAPI1.TessResultIteratorGetPageIterator(ri);
-			TessAPI1.TessPageIteratorBegin(pi);
-			do {
-				Pointer ptr = TessAPI1.TessResultIteratorGetUTF8Text(ri, TessAPI1.TessPageIteratorLevel.RIL_WORD);
-				String word = ptr.getString(0);
-				TessAPI1.TessDeleteText(ptr);
-				float confidence = TessAPI1.TessResultIteratorConfidence(ri, TessAPI1.TessPageIteratorLevel.RIL_WORD);
-				IntBuffer leftB = IntBuffer.allocate(1);
-				IntBuffer topB = IntBuffer.allocate(1);
-				IntBuffer rightB = IntBuffer.allocate(1);
-				IntBuffer bottomB = IntBuffer.allocate(1);
-				TessAPI1.TessPageIteratorBoundingBox(pi, TessAPI1.TessPageIteratorLevel.RIL_WORD, leftB, topB, rightB,
-						bottomB);
-				int left = leftB.get();
-				int top = topB.get();
-				int right = rightB.get();
-				int bottom = bottomB.get();
-				ArrayList<Float> list = new ArrayList<Float>();
-				/*
-				 * list.add((float) left); list.add((float) top); list.add((float) right); list.add((float) bottom);
-				 */
-				list.add(confidence);
-				word = word.replaceAll("[^0-9a-zA-Z\\s]", "");
-				if (!word.trim().equals("") && !word.trim().equals("\n") && confidence > 60) {
-					map.put(word, list);
-				}
-			} while (TessAPI1.TessPageIteratorNext(pi, TessAPI1.TessPageIteratorLevel.RIL_WORD) == TessAPI1.TRUE);
+		meanConfidence = meanConfidence / counter;
+		String name = imageFile.getName().concat("-binary");
+		TessAPI1.TessBaseAPIDumpPGM(handle, name);
+		bw.close();
+		ArrayList<Float> meanConfidenceList = new ArrayList<Float>();
+		meanConfidenceList.add(meanConfidence);
+		map.put("meanConfidence", meanConfidenceList);
+		System.out.println("========================================>> ");
+		Collections.sort(list);
+		//System.out.println(list.get(0));
+		if (meanConfidence >= 65 && map.size()>=4 ) 
 			return map;
-		} catch (Exception e) {
-			// TODO: handle exception
-		}
-
-		return null;
-
+			return null;
 	}
 
 }

@@ -11,6 +11,7 @@ import org.apache.log4j.Logger;
 import org.junit.Test;
 
 import com.imaginea.api.ImageProcessor;
+import com.imaginea.api.Processor;
 
 public class BenchmarkTest {
 
@@ -38,7 +39,7 @@ public class BenchmarkTest {
 				File image = new File(filePath.toString());
 
 				logger.info("Image is sent to the processor");
-				Map<String, String> op = ImageProcessor.process(image);
+				Map<String, String> op = Processor.process(image);
 
 				// Log the below
 				logger.info("File Name : " + filePath.getFileName());

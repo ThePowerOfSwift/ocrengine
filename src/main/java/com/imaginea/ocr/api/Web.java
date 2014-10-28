@@ -27,6 +27,7 @@ import com.imaginea.api.ImageProcessor;
 import com.imaginea.ocr.Benchmark;
 import com.imaginea.ocr.OCR;
 import com.imaginea.ocr.Props;
+import com.imaginea.ocr.Tessaract;
 
 public class Web {
 
@@ -54,7 +55,7 @@ public class Web {
 				File imFile = extractFile(part);
 
 				// Process the file
-				return OCR.process(imFile);
+				return Tessaract.process(imFile);
 
 			} catch (Exception e) {
 				logger.error(e.getMessage());
