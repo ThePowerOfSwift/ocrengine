@@ -10,8 +10,6 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import com.imaginea.api.ImageProcessor;
-
 public class Benchmark {
 
 	private static final Logger logger = Logger.getLogger(Benchmark.class);

@@ -41,7 +41,10 @@ ul {
 						<#assign words = attrs[key]>
 						<table>
 						
+						<#if words?? && words?has_content>
 						<#list words?keys as i>
+						
+							<#if words[i]?? && words[i]?has_content>
 						    <tr>
 							    <td>${i}</td>
 								<td>
@@ -50,7 +53,11 @@ ul {
 								</#list>
 								</td>
 							</tr>
-						</#list>    
+							</#if>	
+							
+						</#list>
+						</#if>
+							    
 						</table>
 					<#else>
 					Not a proper image.

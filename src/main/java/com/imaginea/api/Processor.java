@@ -118,12 +118,16 @@ public class Processor {
 		
 		Collections.sort(list);
 		//System.out.println(list.get(0));
-		if (meanConfidence >= 65 && map.size()>=4 ) 
+		if (meanConfidence >= 65 && map.size()>=4 )
+			map.put("accepted confidence value ",  meanConfidenceList);
+		else
+			map.put("rejected confidence value", meanConfidenceList);
+			
 			return map;
 		
 		
 		
-		return null;
+		
 	}
 
 	public static Map<String, String> process(File imageFile) {

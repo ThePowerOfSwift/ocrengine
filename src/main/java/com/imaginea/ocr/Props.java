@@ -12,7 +12,7 @@ public class Props {
 
 	/* --- Dir Paths */
 	
-	public static final String STD_IMG_DIR = "src/main/resources/std_images/";
+	public static final String STD_IMG_DIR = "src/main/resources/goodImages/";
 
 	public static final String TEST_IMG_DIR = "src/test/resources/images/";
 
@@ -21,7 +21,7 @@ public class Props {
 	
 	/* --- Web API --- */
 	
-	public static final String STATIC_FILE_LOC = "src/test/resources/images/";
+	public static final String STATIC_FILE_LOC = STD_IMG_DIR;
 
 	public static final Integer WEB_PORT = 3000;
 	

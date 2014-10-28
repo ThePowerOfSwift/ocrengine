@@ -7,10 +7,11 @@ import java.util.Map;
 
 import javax.imageio.ImageIO;
 
-import org.apache.log4j.Logger;
-
 import net.sourceforge.tess4j.Tesseract;
 import net.sourceforge.tess4j.TesseractException;
+
+import org.apache.log4j.Logger;
+
 import Catalano.Imaging.FastBitmap;
 import Catalano.Imaging.Filters.BradleyLocalThreshold;
 

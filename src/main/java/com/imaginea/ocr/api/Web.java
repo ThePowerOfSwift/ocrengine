@@ -24,6 +24,7 @@ import spark.ModelAndView;
 import spark.template.freemarker.FreeMarkerEngine;
 
 import com.imaginea.api.ImageProcessor;
+import com.imaginea.api.Processor;
 import com.imaginea.ocr.Benchmark;
 import com.imaginea.ocr.OCR;
 import com.imaginea.ocr.Props;
@@ -44,27 +45,30 @@ public class Web {
 		/* --- Web API End Points --- */
 
 		// process a given file
-		post("/process", (req, res) -> {
-			logger.info("Web request : /process");
+		post("/process",
+				(req, res) -> {
+					logger.info("Web request : /process");
 
-			try {
-				MultipartConfigElement multipartConfigElement = new MultipartConfigElement(Props.TEMP_DIR);
-				req.raw().setAttribute(MULTIPART_CONFIG, multipartConfigElement);
+					try {
+						MultipartConfigElement multipartConfigElement = new MultipartConfigElement(
+								Props.TEMP_DIR);
+						req.raw().setAttribute(MULTIPART_CONFIG,
+								multipartConfigElement);
 
-				Part part = req.raw().getPart("file");
-				File imFile = extractFile(part);
+						Part part = req.raw().getPart("file");
+						File imFile = extractFile(part);
 
-				// Process the file
-				return Tessaract.process(imFile);
+						// Process the file
+						return OCR.newProcess(imFile);
 
-			} catch (Exception e) {
-				logger.error(e.getMessage());
-				e.printStackTrace();
-			}
+					} catch (Exception e) {
+						logger.error(e.getMessage());
+						e.printStackTrace();
+					}
 
-			return null;
+					return null;
 
-		});
+				});
 
 		// Benchmark results
 		get("/benchmark", (request, response) -> {
@@ -93,6 +97,7 @@ public class Web {
 	 */
 	private static File extractFile(Part file) {
 		File targetFile = null;
+
 		try {
 			String tempFileName = "temp-" + System.currentTimeMillis() + ".jpg";
 			targetFile = new File(tempFileName);
