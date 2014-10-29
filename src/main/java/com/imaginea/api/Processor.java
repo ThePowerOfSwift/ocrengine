@@ -63,8 +63,7 @@ public class Processor {
 				.TessResultIteratorGetPageIterator(ri);
 		TessAPI1.TessPageIteratorBegin(pi);
 
-		String pathToFile = imageFile.getPath().concat("txt");
-		BufferedWriter bw = new BufferedWriter(new FileWriter(pathToFile));
+		
 		float meanConfidence = 0;
 		int counter = 0;
 		ArrayList<Float> list;
@@ -90,8 +89,7 @@ public class Processor {
 			
 			word = word.replaceAll("[^0-9a-zA-Z\\s]", "");
 			String line = word + "-" + String.valueOf(LineConfidence);
-			bw.write(line);
-			bw.write("\n");
+			
 
 			if (!word.trim().equals("") && !word.trim().equals("\n")&& LineConfidence>=55 && word.length()>=5) {
 				list.add(LineConfidence);
@@ -107,8 +105,7 @@ public class Processor {
 		String name = imageFile.getName().concat("-binary");
 		TessAPI1.TessBaseAPIDumpPGM(handle, name);
 
-		bw.close();
-
+	
 		ArrayList<Float> meanConfidenceList = new ArrayList<Float>();
 		meanConfidenceList.add(meanConfidence);
 
@@ -121,7 +118,7 @@ public class Processor {
 		if (meanConfidence >= 65 && map.size()>=4 )
 			map.put("Image accepted confidence value is optimal ",  meanConfidenceList);
 		else
-			map.put("Image rejected confidence value is low", meanConfidenceList);
+			map.put("Not a proper image", meanConfidenceList);
 			
 			return map;
 		

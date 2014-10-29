@@ -99,7 +99,7 @@ public class OCR {
 		if (meanConfidence >= 65 && map.size() >= 5) {
 			map.put("image accepted because confidence value is optimal", meanConfidenceList);
 		} else {
-			map.put("image rejected because confidence vale is low",  meanConfidenceList);
+			map.put("Not a proper image",  meanConfidenceList);
 		}
 			
 		return map;
