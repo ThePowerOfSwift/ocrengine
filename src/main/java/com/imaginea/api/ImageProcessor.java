@@ -67,7 +67,7 @@ public class ImageProcessor {
 
 	public static void main(String args[]) {
 
-		setPort(4565);
+		setPort(4566);
 		staticFileLocation("/goodImages");
 		get("/", (request, response) -> {
 			Map<String, Object> attributes = new HashMap<>();

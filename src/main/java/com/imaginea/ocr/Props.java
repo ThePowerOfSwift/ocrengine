@@ -21,7 +21,7 @@ public class Props {
 	
 	/* --- Web API --- */
 	
-	public static final String STATIC_FILE_LOC = STD_IMG_DIR;
+	public static final String STATIC_FILE_LOC = "/goodImages";
 
 	public static final Integer WEB_PORT = 3000;
 	

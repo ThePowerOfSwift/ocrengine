@@ -119,9 +119,9 @@ public class Processor {
 		Collections.sort(list);
 		//System.out.println(list.get(0));
 		if (meanConfidence >= 65 && map.size()>=4 )
-			map.put("accepted confidence value ",  meanConfidenceList);
+			map.put("Image accepted confidence value is optimal ",  meanConfidenceList);
 		else
-			map.put("rejected confidence value", meanConfidenceList);
+			map.put("Image rejected confidence value is low", meanConfidenceList);
 			
 			return map;
 		

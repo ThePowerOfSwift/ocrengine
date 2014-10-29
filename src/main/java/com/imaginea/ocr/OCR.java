@@ -96,10 +96,10 @@ public class OCR {
 		map.put("meanConfidence", meanConfidenceList);
 		System.out.println("========================================>> ");
 		Collections.sort(list);
-		if (meanConfidence >= 65 && map.size() >= 4) {
-			map.put("accepted confidence value ", meanConfidenceList);
+		if (meanConfidence >= 65 && map.size() >= 5) {
+			map.put("image accepted because confidence value is optimal", meanConfidenceList);
 		} else {
-			map.put("rejected", null);
+			map.put("image rejected because confidence vale is low",  meanConfidenceList);
 		}
 			
 		return map;
