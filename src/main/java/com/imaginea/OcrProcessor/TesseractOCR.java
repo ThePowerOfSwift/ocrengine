@@ -1,4 +1,4 @@
-package com.imaginea.ocr;
+package com.imaginea.OcrProcessor;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -15,17 +15,24 @@ import org.apache.log4j.Logger;
 import Catalano.Imaging.FastBitmap;
 import Catalano.Imaging.Filters.BradleyLocalThreshold;
 
-import com.imaginea.process.OtsuBinarize;
+import com.imaginea.ocr.preprocess.Otsu;
 
-public class Tessaract {
-	private static final Logger logger = Logger.getLogger(Tesseract.class);
+public class TesseractOCR {
+	private static final Logger logger = Logger.getLogger(TesseractOCR.class);
 
+	/**
+	 * pre-processing steps like Otsu and Bradley thresholding are done before
+	 * running through OCR
+	 * 
+	 * @param imageFile
+	 * @return recognized characters/Words from the image.
+	 */
 	public static Map<String, String> process(File imageFile) {
 		try {
 
 			BufferedImage inputImage = ImageIO.read(imageFile);
-			BufferedImage grayScale = OtsuBinarize.toGray(inputImage);
-			BufferedImage binaryImage = OtsuBinarize.binarize(grayScale);
+			BufferedImage grayScale = Otsu.toGray(inputImage);
+			BufferedImage binaryImage = Otsu.binarize(grayScale);
 
 			File binaryFile = new File("tempBinary-otsu.jpg");
 			ImageIO.write(binaryImage, "jpg", binaryFile);
@@ -49,7 +56,7 @@ public class Tessaract {
 			ImageIO.write(outputImage, "jpg", binaryFile1);
 
 			Tesseract instance = Tesseract.getInstance();
-			
+
 			try {
 
 				String result = instance.doOCR(binaryFile);

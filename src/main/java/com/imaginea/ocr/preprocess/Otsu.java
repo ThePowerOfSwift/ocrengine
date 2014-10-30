@@ -12,14 +12,14 @@ import org.apache.log4j.Logger;
 public class Otsu {
 
 	private static final Logger logger = Logger.getLogger(Otsu.class);
-	
-	
+
 	private static BufferedImage original, grayscale, binarized;
 
 	public static void main(String[] args) throws IOException {
 
-		File original_f = new File("/home/prasanna/Documents/OCR-Gimp/TestImage.jpg");
-		String output_f = "/home/prasanna/Documents/OCR-Gimp/TestImage-codeOP";
+		File original_f = new File(
+				"src/main/resources/testImages/IMG8_good.JPG");
+		String output_f = "src/main/resources/testImages/TestImage-code";
 		original = ImageIO.read(original_f);
 		grayscale = toGray(original);
 		binarized = binarize(grayscale);
@@ -32,9 +32,14 @@ public class Otsu {
 		ImageIO.write(binarized, "jpg", file);
 	}
 
-	/*
+	/**
 	 * Return histogram of grayscale image
+	 * 
+	 * @param input
+	 *            image
+	 * @return image Histogram
 	 */
+
 	public static int[] imageHistogram(BufferedImage input) {
 		logger.info("processing Histrogram");
 		int[] histogram = new int[256];
@@ -53,15 +58,19 @@ public class Otsu {
 
 	}
 
-	/*
+	/**
 	 * The luminance method returns grayscale image for a colored one
+	 * 
+	 * @param original
+	 * @return grayscale image
 	 */
 	public static BufferedImage toGray(BufferedImage original) {
 
 		int alpha, red, green, blue;
 		int newPixel;
 
-		BufferedImage lum = new BufferedImage(original.getWidth(), original.getHeight(), original.getType());
+		BufferedImage lum = new BufferedImage(original.getWidth(),
+				original.getHeight(), original.getType());
 		try {
 			logger.info("converting to gray scale");
 			for (int i = 0; i < original.getWidth(); i++) {
@@ -138,6 +147,11 @@ public class Otsu {
 
 	}
 
+	/**
+	 * 
+	 * @param original
+	 * @return otsu binarized image
+	 */
 	public static BufferedImage binarize(BufferedImage original) {
 
 		try {
@@ -147,9 +161,12 @@ public class Otsu {
 
 			int threshold = otsuTreshold(original);
 
-			System.out.println("========================>>>> OTSU Threshold value :" + threshold);
+			System.out
+					.println("========================>>>> OTSU Threshold value :"
+							+ threshold);
 
-			BufferedImage binarized = new BufferedImage(original.getWidth(), original.getHeight(), original.getType());
+			BufferedImage binarized = new BufferedImage(original.getWidth(),
+					original.getHeight(), original.getType());
 
 			for (int i = 0; i < original.getWidth(); i++) {
 				for (int j = 0; j < original.getHeight(); j++) {

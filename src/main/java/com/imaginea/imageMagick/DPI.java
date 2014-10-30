@@ -16,54 +16,69 @@ import javax.imageio.metadata.IIOMetadataNode;
 import javax.imageio.stream.ImageOutputStream;
 
 public class DPI {
-       
-	
-	
-	public static void saveGridImage(File output,BufferedImage input) throws IOException {
-	    output.delete();
-BufferedImage gridImage =input; 
-	    final String formatName = "jpg";
 
-	    for (Iterator<ImageWriter> iw = ImageIO.getImageWritersByFormatName(formatName); iw.hasNext();) {
-	       ImageWriter writer = iw.next();
-	       ImageWriteParam writeParam = writer.getDefaultWriteParam();
-	       ImageTypeSpecifier typeSpecifier = ImageTypeSpecifier.createFromBufferedImageType(BufferedImage.TYPE_INT_RGB);
-	       IIOMetadata metadata = writer.getDefaultImageMetadata(typeSpecifier, writeParam);
-	       if (metadata.isReadOnly() || !metadata.isStandardMetadataFormatSupported()) {
-	          continue;
-	       }
+	/**
+	 * 
+	 * @param input
+	 *            image
+	 * @param output
+	 *            specify path for output image file
+	 * @throws IOException
+	 */
 
-	       setDPI(metadata);
+	public static void saveGridImage(BufferedImage input, File output)
+			throws IOException {
+		output.delete();
+		BufferedImage gridImage = input;
+		final String formatName = "jpg";
 
-	       final ImageOutputStream stream = ImageIO.createImageOutputStream(output);
-	       try {
-	          writer.setOutput(stream);
-	          writer.write(metadata, new IIOImage(gridImage, null, metadata), writeParam);
-	       } finally {
-	          stream.close();
-	       }
-	       break;
-	    }
-	 }
+		for (Iterator<ImageWriter> iw = ImageIO
+				.getImageWritersByFormatName(formatName); iw.hasNext();) {
+			ImageWriter writer = iw.next();
+			ImageWriteParam writeParam = writer.getDefaultWriteParam();
+			ImageTypeSpecifier typeSpecifier = ImageTypeSpecifier
+					.createFromBufferedImageType(BufferedImage.TYPE_INT_RGB);
+			IIOMetadata metadata = writer.getDefaultImageMetadata(
+					typeSpecifier, writeParam);
+			if (metadata.isReadOnly()
+					|| !metadata.isStandardMetadataFormatSupported()) {
+				continue;
+			}
 
-	 private static void setDPI(IIOMetadata metadata) throws IIOInvalidTreeException {
+			setDPI(metadata);
 
-	    // for PMG, it's dots per millimeter
-	    double dotsPerMilli = 300 ;
+			final ImageOutputStream stream = ImageIO
+					.createImageOutputStream(output);
+			try {
+				writer.setOutput(stream);
+				writer.write(metadata, new IIOImage(gridImage, null, metadata),
+						writeParam);
+			} finally {
+				stream.close();
+			}
+			break;
+		}
+	}
 
-	    IIOMetadataNode horiz = new IIOMetadataNode("HorizontalPixelSize");
-	    horiz.setAttribute("value", Double.toString(dotsPerMilli));
+	private static void setDPI(IIOMetadata metadata)
+			throws IIOInvalidTreeException {
 
-	    IIOMetadataNode vert = new IIOMetadataNode("VerticalPixelSize");
-	    vert.setAttribute("value", Double.toString(dotsPerMilli));
+		// for PMG, it's dots per millimeter
+		double dotsPerMilli = 300;
 
-	    IIOMetadataNode dim = new IIOMetadataNode("Dimension");
-	    dim.appendChild(horiz);
-	    dim.appendChild(vert);
+		IIOMetadataNode horiz = new IIOMetadataNode("HorizontalPixelSize");
+		horiz.setAttribute("value", Double.toString(dotsPerMilli));
 
-	    IIOMetadataNode root = new IIOMetadataNode("javax_imageio_1.0");
-	    root.appendChild(dim);
+		IIOMetadataNode vert = new IIOMetadataNode("VerticalPixelSize");
+		vert.setAttribute("value", Double.toString(dotsPerMilli));
 
-	    metadata.mergeTree("javax_imageio_1.0", root);
-	 }
+		IIOMetadataNode dim = new IIOMetadataNode("Dimension");
+		dim.appendChild(horiz);
+		dim.appendChild(vert);
+
+		IIOMetadataNode root = new IIOMetadataNode("javax_imageio_1.0");
+		root.appendChild(dim);
+
+		metadata.mergeTree("javax_imageio_1.0", root);
+	}
 }

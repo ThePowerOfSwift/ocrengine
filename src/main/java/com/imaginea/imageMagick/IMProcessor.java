@@ -22,14 +22,14 @@ import magick.MagickImage;
 import magick.util.DisplayImageMetaData;
 
 public class IMProcessor {
-	private static String path = "src/main/resources/goodImages/IMG10_ReallyGood_150dpi.JPG";
 
-	public static void main(String[] args) {
+	public static BufferedImage preProcess(File path) {
+		BufferedImage buffImage = null;
 		try {
-			BufferedImage input= ImageIO.read(new File(path));
-			ImageIO.write(input, "jpg",new File("src/main/resources/ImageMagick/before.jpg"));
-			ImageIO.write(input, "jpg",new File("/home/uttam/Desktop/ima/output/before.jpg"));
-	       	
+			BufferedImage input = ImageIO.read(path);
+			ImageIO.write(input, "jpg", new File(
+					"src/main/resources/ImageMagick/before.jpg"));
+
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -37,35 +37,33 @@ public class IMProcessor {
 
 		try {
 			MagickImage Image = new MagickImage();
-			Image.readImage(new ImageInfo(path));
-			MagickImage MImage= Image.enhanceImage().reduceNoiseImage(2);
-			int height = (int) MImage.getDimension().getHeight();
-			int width = (int) MImage.getDimension().getWidth();
-	
-			System.out.println(MImage.getXResolution());
-			System.out.println("height: " + height + " Width:" + width);
-			MagickImage scale = MImage.scaleImage(2* width, 2* height);
-			 scale.setFilter(3); // Triangular filter
-			MagickImage set = scale.autoOrientImage();
+			Image.readImage(new ImageInfo(path.getAbsolutePath()));
+			MagickImage MImage = Image.enhanceImage().reduceNoiseImage(10);
+
+			MImage.setFilter(3); // Triangular filter
+			MagickImage set = MImage.autoOrientImage();
 
 			DisplayImageMetaData.displayMagickImage(set);
 
-			BufferedImage buffImage = IMProcessor
-					.magickImageToBufferedImage(set);
-			 DPI.saveGridImage(
-			 new File("src/main/resources/ImageMagick/after.jpg"),
-			buffImage);
-			 DPI.saveGridImage(
-					 new File("/home/uttam/Desktop/ima/output/after1.jpg"),
-					buffImage);
-	//		ImageIO.write(buffImage, "jpg", new File(
-	//				"src/main/resources/ImageMagick/after.jpg"));
-//
+			buffImage = IMProcessor.magickImageToBufferedImage(set);
+
+			ImageIO.write(buffImage, "jpg", new File(
+					"src/main/resources/ImageMagick/after.jpg"));
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		return buffImage;
 
 	}
+
+	/**
+	 * convert from MagickImage to Buffered Image
+	 * 
+	 * @param magickImage
+	 * @return buffered image
+	 * @throws Exception
+	 */
 
 	public static BufferedImage magickImageToBufferedImage(
 			MagickImage magickImage) throws Exception {

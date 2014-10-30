@@ -1,7 +1,7 @@
-package com.imaginea.ocr.api;
+package com.imaginea.api;
 
-import static com.imaginea.ocr.Props.STATIC_FILE_LOC;
-import static com.imaginea.ocr.Props.WEB_PORT;
+import static com.imaginea.OcrProcessor.Prop.STATIC_FILE_LOC;
+import static com.imaginea.OcrProcessor.Prop.WEB_PORT;
 import static spark.Spark.get;
 import static spark.Spark.post;
 import static spark.SparkBase.setPort;
@@ -23,13 +23,16 @@ import org.apache.log4j.Logger;
 import spark.ModelAndView;
 import spark.template.freemarker.FreeMarkerEngine;
 
-import com.imaginea.api.ImageProcessor;
-import com.imaginea.api.Processor;
-import com.imaginea.ocr.Benchmark;
-import com.imaginea.ocr.OCR;
-import com.imaginea.ocr.Props;
-import com.imaginea.ocr.Tessaract;
+import com.imaginea.OcrProcessor.Benchmark;
+import com.imaginea.OcrProcessor.OCR;
+import com.imaginea.OcrProcessor.Prop;
 
+/**
+ * Implements OCR on a Image and recognizes the text in it.
+ * 
+ * @author
+ *
+ */
 public class Web {
 
 	private static final Logger logger = Logger.getLogger(Web.class);
@@ -51,7 +54,7 @@ public class Web {
 
 					try {
 						MultipartConfigElement multipartConfigElement = new MultipartConfigElement(
-								Props.TEMP_DIR);
+								Prop.TEMP_DIR);
 						req.raw().setAttribute(MULTIPART_CONFIG,
 								multipartConfigElement);
 
@@ -81,7 +84,7 @@ public class Web {
 		}, new FreeMarkerEngine());
 
 		// Health Check
-		get("/test", (request, response) -> {
+		get("/", (request, response) -> {
 			logger.info("Web request : /test");
 
 			Map<String, Object> attributes = new HashMap<>();

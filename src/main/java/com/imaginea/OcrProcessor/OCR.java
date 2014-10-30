@@ -1,4 +1,4 @@
-package com.imaginea.ocr;
+package com.imaginea.OcrProcessor;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.IntBuffer;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,18 +20,25 @@ import net.sourceforge.vietocr.ImageIOHelper;
 import com.sun.jna.Pointer;
 
 public class OCR {
-
 	static TessAPI1.TessBaseAPI handle;
 	static TessAPI1 api;
 	static String language = "eng";
 	static String datapath = "./";
 
-	/*
-	 * Basic code of OCR,Reads the image and gives the characters from it.
+	/**
+	 * 
+	 * Basic code of Tesseract-OCR,Reads the image and gives the characters from
+	 * it.
+	 * 
+	 * @param imageFile
+	 * @return Returns a mapping from Words to its corresponding confidence.
+	 * @throws FileNotFoundException
+	 * @throws IOException
 	 */
 	public static Map<String, List<Float>> newProcess(File imageFile)
 			throws FileNotFoundException, IOException {
 		Map<String, List<Float>> map = new LinkedHashMap<>();
+
 		handle = TessAPI1.TessBaseAPICreate();
 		System.out.println("TessBaseAPIGetIterator");
 		BufferedImage image = ImageIO.read(new FileInputStream(imageFile));
@@ -93,16 +99,19 @@ public class OCR {
 
 		ArrayList<Float> meanConfidenceList = new ArrayList<Float>();
 		meanConfidenceList.add(meanConfidence);
+
 		map.put("meanConfidence", meanConfidenceList);
+
 		System.out.println("========================================>> ");
-		Collections.sort(list);
-		if (meanConfidence >= 65 && map.size() >= 5) {
-			map.put("image accepted because confidence value is optimal", meanConfidenceList);
-		} else {
-			map.put("Not a proper image",  meanConfidenceList);
-		}
-			
+
+		if (meanConfidence >= 65 && map.size() >= 4)
+			map.put("Image accepted confidence value is optimal ",
+					meanConfidenceList);
+		else
+			map.put("Not a proper image", meanConfidenceList);
+
 		return map;
+
 	}
 
 }
