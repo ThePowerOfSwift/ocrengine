@@ -83,6 +83,7 @@ public class OCR {
 			word = word.replaceAll("[^0-9a-zA-Z\\s]", "");
 
 			if (!word.trim().equals("") && !word.trim().equals("\n")
+				//	&& word.length()>=5 && LineConfidence>=55
 				) {
 				list.add(LineConfidence);
 				meanConfidence += LineConfidence;
@@ -104,7 +105,8 @@ public class OCR {
 
 		System.out.println("========================================>> ");
 
-		if (meanConfidence >= 65 )
+		if (meanConfidence >= 65 //&& map.size()>=4
+				)
 			map.put("Image accepted confidence value is optimal ",
 					meanConfidenceList);
 		else

@@ -13,24 +13,23 @@ public class Otsu {
 
 	private static final Logger logger = Logger.getLogger(Otsu.class);
 
-	private static BufferedImage original, grayscale, binarized;
-
-	public static void main(String[] args) throws IOException {
-
-		File original_f = new File(
-				"src/main/resources/testImages/IMG8_good.JPG");
-		String output_f = "src/main/resources/testImages/TestImage-code";
-		original = ImageIO.read(original_f);
-		grayscale = toGray(original);
-		binarized = binarize(grayscale);
-		writeImage(output_f);
-
-	}
-
-	private static void writeImage(String output) throws IOException {
-		File file = new File(output + ".jpg");
-		ImageIO.write(binarized, "jpg", file);
-	}
+	/*
+	 * private static BufferedImage original, grayscale, binarized;
+	 * 
+	 * public static void main(String[] args) throws IOException {
+	 * 
+	 * File original_f = new File(
+	 * "src/main/resources/testImages/IMG8_good.JPG"); String output_f =
+	 * "src/main/resources/testImages/TestImage-code"; original =
+	 * ImageIO.read(original_f); grayscale = toGray(original); binarized =
+	 * binarize(grayscale); writeImage(output_f);
+	 * 
+	 * }
+	 * 
+	 * private static void writeImage(String output) throws IOException { File
+	 * file = new File(output + ".jpg"); ImageIO.write(binarized, "jpg", file);
+	 * }
+	 */
 
 	/**
 	 * Return histogram of grayscale image

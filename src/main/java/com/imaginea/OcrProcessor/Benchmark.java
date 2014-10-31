@@ -10,10 +10,10 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
-import com.imaginea.api.Web;
+import com.imaginea.api.ImageProcessor;
 
 public class Benchmark {
-	private static final Logger logger = Logger.getLogger(Web.class);
+	private static final Logger logger = Logger.getLogger(ImageProcessor.class);
 	private static final String img_dir_path = "src/main/resources/goodImages/";
 
 	/**
