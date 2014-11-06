@@ -17,6 +17,7 @@ import javax.imageio.ImageIO;
 import net.sourceforge.tess4j.TessAPI1;
 import net.sourceforge.vietocr.ImageIOHelper;
 
+import com.imageinea.ocrutil.JsonTransformer;
 import com.sun.jna.Pointer;
 
 public class OCR {
@@ -35,7 +36,7 @@ public class OCR {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	public static Map<String, List<Float>> newProcess(File imageFile)
+	public static String newProcess(File imageFile)
 			throws FileNotFoundException, IOException {
 		Map<String, List<Float>> map = new LinkedHashMap<>();
 
@@ -83,8 +84,8 @@ public class OCR {
 			word = word.replaceAll("[^0-9a-zA-Z\\s]", "");
 
 			if (!word.trim().equals("") && !word.trim().equals("\n")
-				//	&& word.length()>=5 && LineConfidence>=55
-				) {
+			// && word.length()>=5 && LineConfidence>=55
+			) {
 				list.add(LineConfidence);
 				meanConfidence += LineConfidence;
 				counter++;
@@ -105,14 +106,14 @@ public class OCR {
 
 		System.out.println("========================================>> ");
 
-		if (meanConfidence >= 65 //&& map.size()>=4
-				)
+		if (meanConfidence >= 65 // && map.size()>=4
+		)
 			map.put("Image accepted confidence value is optimal ",
 					meanConfidenceList);
 		else
 			map.put("Not a proper image", meanConfidenceList);
-
-		return map;
+		JsonTransformer trans = new JsonTransformer();
+		return trans.render(map);
 
 	}
 

@@ -5,11 +5,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import com.imageinea.ocrutil.JsonTransformer;
 import com.imaginea.api.ImageProcessor;
 
 public class Benchmark {
@@ -24,7 +26,8 @@ public class Benchmark {
 	public static Map<String, Map<String, List<Float>>> standardImagesSet() {
 		logger.info("Reading images");
 		Map<String, Map<String, List<Float>>> map = new HashMap<>();
-
+		JsonTransformer transformer = new JsonTransformer();
+		
 		try {
 			Files.walk(Paths.get(img_dir_path)).forEach(filePath -> {
 
@@ -33,7 +36,8 @@ public class Benchmark {
 					logger.info("Image is sent to the processor");
 					Map<String, List<Float>> op = null;
 					try {
-						op = OCR.newProcess(image);
+						String opStr = OCR.newProcess(image);
+						op = (LinkedHashMap)transformer.parse(opStr);
 					} catch (Exception e) {
 						// TODO Auto-generated catch block
 					e.printStackTrace();
