@@ -11,4 +11,4 @@ To run the application,
 
 mvn install
 
-and the application will be started in default of 4565 port.
+and the application will be started in 4565 port.
